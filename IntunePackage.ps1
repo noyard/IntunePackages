@@ -1,21 +1,30 @@
 $dest = "c:\temp\"
-$PackageUrl = "https://api.github.com/repos/noyard/intunepackages/contents/Packages"
+$PackagesUrl = "https://api.github.com/repos/noyard/intunepackages/contents/Packages"
+$Package = "Microsoft CodE"
+
+
 $response = Invoke-WebRequest -Uri $PackageUrl -Method Get 
+$PackageInfo = ConvertFrom-json $response.content
 
-$Token = 'MyUserName:MyPAT'
-$Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
-
-$Headers = @{
-    "Authorization" = 'Basic {0}' -f $Base64Token;
-    "accept" = "application/vnd.github.v3+json"
-    }
-
-$Uri = "https://api.github.com/repos/{owner}/{repo}/zipball"
-$response = Invoke-WebRequest -Headers $Headers -Uri $Uri -Method Get 
-
-
-
-
+if (!($Package)) 
+	{
+		"Available Packages are:"
+		$PackageInfo
+	}else{
+		If (!($PackageInfo | Where-Object Name -eq $package))
+		{
+			"Package $($package) not found"
+		}else{
+			$PackageInfo = $PackageInfo | Where-Object Name -eq $package
+			$files =ConvertFrom-Json ((Invoke-WebRequest -Uri $PackageInfo.url -Method Get).content)
+			Foreach ($file in $files)
+				{
+					$filepath = "$($dest)$($file.path)"
+					New-Item $(Split-Path -Path $filepath -Parent) -ItemType Directory -Force
+					Start-BitsTransfer -Source $file.download_url -Destination "$($dest)$($file.path)"
+				}
+		}
+	}
 
 # check for at .net 4.7.2 at the minimum
 # https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed

@@ -1,4 +1,21 @@
 $dest = "c:\temp\"
+$PackageUrl = "https://api.github.com/repos/noyard/intunepackages/contents/Packages"
+$response = Invoke-WebRequest -Uri $PackageUrl -Method Get 
+
+$Token = 'MyUserName:MyPAT'
+$Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
+
+$Headers = @{
+    "Authorization" = 'Basic {0}' -f $Base64Token;
+    "accept" = "application/vnd.github.v3+json"
+    }
+
+$Uri = "https://api.github.com/repos/{owner}/{repo}/zipball"
+$response = Invoke-WebRequest -Headers $Headers -Uri $Uri -Method Get 
+
+
+
+
 
 # check for at .net 4.7.2 at the minimum
 # https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
